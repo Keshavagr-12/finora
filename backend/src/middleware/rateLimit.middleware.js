@@ -39,3 +39,23 @@ export const loginLimiter = rateLimit({
     }
 
 });
+
+
+export const refreshLimiter = rateLimit({
+
+    windowMs: 15 * 60 * 1000,
+
+    limit: 30,
+
+    standardHeaders: "draft-7",
+
+    legacyHeaders: false,
+
+    message: {
+        success: false,
+        statusCode: 429,
+        message: "Too many refresh requests.",
+        errors: []
+    }
+
+});

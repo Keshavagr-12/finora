@@ -6,13 +6,14 @@ import {
 
 import {
     registerUser,
-    loginUser
+    loginUser,
+    refreshSession
 } from "./auth.service.js";
 
 import ApiResponse from "../../utils/ApiResponse.js";
 
 import {
-    setRefreshTokenCookie
+    setRefreshTokenCookie,clearRefreshTokenCookie
 } from "../../utils/cookie.js";
 
 export const register = async (req, res, next) => {
@@ -66,4 +67,44 @@ export const login = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
+};
+
+
+export const refresh = async (req, res, next) => {
+
+    try {
+
+        const refreshToken =
+            req.cookies.finoraRefreshToken;
+
+        const tokens = await refreshSession(
+            refreshToken
+        );
+
+        setRefreshTokenCookie(
+            res,
+            tokens.refreshToken
+        );
+
+        res.set("Cache-Control", "no-store");
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                {
+                    accessToken: tokens.accessToken
+                },
+                "Session refreshed successfully"
+            )
+        );
+
+    } catch (error) {
+
+        if (error.statusCode === 401) {
+            clearRefreshTokenCookie(res);
+        }
+
+        next(error);
+    }
+
 };

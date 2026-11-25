@@ -39,7 +39,13 @@ export const hashToken = (token) => {
 };
 
 // Create access and refresh token pair
-export const createTokenPair = async (user) => {
+export const createTokenPair = async (
+    user,
+    {
+        familyId = crypto.randomUUID(),
+        session = null
+    } = {}
+) => {
 
     const accessToken = generateAccessToken(user);
 
@@ -49,19 +55,40 @@ export const createTokenPair = async (user) => {
 
     const expiresAt = new Date(
         Date.now() +
-        env.REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000
+        env.REFRESH_TOKEN_EXPIRY_DAYS *
+        24 * 60 * 60 * 1000
     );
 
-    await RefreshToken.create({
-        user: user._id,
-        tokenHash,
-        expiresAt
-    });
+    await RefreshToken.create(
+        [
+            {
+                user: user._id,
+                tokenHash,
+                familyId,
+                expiresAt
+            }
+        ],
+        { session }
+    );
 
     return {
         accessToken,
         refreshToken,
         refreshTokenExpiresAt: expiresAt
     };
+
+};
+
+export const verifyAccessToken = (token) => {
+
+    return jwt.verify(
+        token,
+        env.JWT_ACCESS_SECRET,
+        {
+            algorithms: ["HS256"],
+            issuer: "finora-api",
+            audience: "finora-client"
+        }
+    );
 
 };
