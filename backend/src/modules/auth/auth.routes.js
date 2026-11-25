@@ -23,6 +23,13 @@ import {
     verifyOrigin
 } from "../../middleware/csrf.middleware.js";
 
+
+import {
+    authorize
+} from "../../middleware/role.middleware.js";
+
+import ApiResponse from "../../utils/ApiResponse.js";
+
 const router = Router();
 
 router.post(
@@ -63,5 +70,26 @@ router.get(
     protect,
     getMe
 );
+
+router.get(
+    "/admin-test",
+    protect,
+    authorize("admin"),
+    (req, res) => {
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                {
+                    userId: req.user._id,
+                    role: req.user.role
+                },
+                "Administrator access granted"
+            )
+        );
+
+    }
+);
+
 
 export default router;
