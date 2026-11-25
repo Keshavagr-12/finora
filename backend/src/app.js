@@ -3,21 +3,20 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import mongoose from "mongoose";
+import cookieParser from "cookie-parser";
 
 import { env } from "./config/env.js";
 
 import ApiResponse from "./utils/ApiResponse.js";
 import ApiError from "./utils/ApiError.js";
 
-import errorHandler from "./middleware/error.middleware.js";
-import notFound from "./middleware/notFound.middleware.js";
+import authRoutes from "./modules/auth/auth.routes.js";
 import aiRoutes from "./modules/ai/ai.routes.js";
 
-
+import errorHandler from "./middleware/error.middleware.js";
+import notFound from "./middleware/notFound.middleware.js";
 
 const app = express();
-app.use("/api/v1/ai", aiRoutes);
-
 
 // Security middleware
 app.use(helmet());
@@ -34,6 +33,8 @@ app.use(express.urlencoded({
     extended: true,
     limit: "1mb"
 }));
+
+app.use(cookieParser());
 
 // Request logging
 if (env.NODE_ENV === "development") {
@@ -65,6 +66,10 @@ app.get("/api/v1/health", (req, res) => {
         )
     );
 });
+
+// Module routes
+app.use("/api/v1/ai", aiRoutes);
+app.use("/api/v1/auth", authRoutes);
 
 // Error handling middleware
 app.use(notFound);

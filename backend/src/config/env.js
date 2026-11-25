@@ -15,6 +15,12 @@ const envSchema = z.object({
   AI_SERVICE_URL: z.string().url(),
 
   AI_SERVICE_TIMEOUT: z.coerce.number().int().positive().default(5000),
+
+  JWT_ACCESS_SECRET: z.string().min(64),
+
+  JWT_ACCESS_EXPIRY: z.literal("15m").default("15m"),
+
+  REFRESH_TOKEN_EXPIRY_DAYS: z.coerce.number().int().min(1).max(30).default(7),
 });
 
 const result = envSchema.safeParse(process.env);
