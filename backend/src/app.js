@@ -4,37 +4,70 @@ import helmet from "helmet";
 import morgan from "morgan";
 import mongoose from "mongoose";
 
-const app = express();
+import { env } from "./config/env.js";
 
-// Global middleware
+import ApiResponse from "./utils/ApiResponse.js";
+import ApiError from "./utils/ApiError.js";
+
+import errorHandler from "./middleware/error.middleware.js";
+import notFound from "./middleware/notFound.middleware.js";
+import aiRoutes from "./modules/ai/ai.routes.js";
+
+
+
+const app = express();
+app.use("/api/v1/ai", aiRoutes);
+
+
+// Security middleware
 app.use(helmet());
 
 app.use(cors({
-    origin: process.env.CLIENT_URL,
+    origin: env.CLIENT_URL,
     credentials: true
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Request parsing
+app.use(express.json({ limit: "1mb" }));
 
-if (process.env.NODE_ENV === "development") {
+app.use(express.urlencoded({
+    extended: true,
+    limit: "1mb"
+}));
+
+// Request logging
+if (env.NODE_ENV === "development") {
     app.use(morgan("dev"));
 }
 
-// Health check API
+// Health endpoint
 app.get("/api/v1/health", (req, res) => {
     const isDBConnected =
         mongoose.connection.readyState === 1;
 
-    res.status(isDBConnected ? 200 : 503).json({
-        success: isDBConnected,
-        service: "FINORA Backend",
-        status: isDBConnected ? "healthy" : "unhealthy",
-        database: isDBConnected
-            ? "connected"
-            : "disconnected",
-        timestamp: new Date().toISOString()
-    });
+    if (!isDBConnected) {
+        throw new ApiError(
+            503,
+            "Database unavailable"
+        );
+    }
+
+    res.status(200).json(
+        new ApiResponse(
+            200,
+            {
+                service: "FINORA Backend",
+                status: "healthy",
+                database: "connected",
+                timestamp: new Date().toISOString()
+            },
+            "Service is healthy"
+        )
+    );
 });
+
+// Error handling middleware
+app.use(notFound);
+app.use(errorHandler);
 
 export default app;
