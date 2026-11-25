@@ -4,16 +4,23 @@ import {
     loginSchema
 } from "./auth.validation.js";
 
-import {
-    registerUser,
-    loginUser,
-    refreshSession
-} from "./auth.service.js";
+
 
 import ApiResponse from "../../utils/ApiResponse.js";
 
+
+
 import {
-    setRefreshTokenCookie,clearRefreshTokenCookie
+    registerUser,
+    loginUser,
+    refreshSession,
+    logoutUser,
+    logoutAllSessions
+} from "./auth.service.js";
+
+import {
+    setRefreshTokenCookie,
+    clearRefreshTokenCookie
 } from "../../utils/cookie.js";
 
 export const register = async (req, res, next) => {
@@ -104,6 +111,77 @@ export const refresh = async (req, res, next) => {
             clearRefreshTokenCookie(res);
         }
 
+        next(error);
+    }
+
+};
+
+export const logout = async (req, res, next) => {
+
+    try {
+
+        const refreshToken =
+            req.cookies.finoraRefreshToken;
+
+        await logoutUser(refreshToken);
+
+        clearRefreshTokenCookie(res);
+
+        res.set("Cache-Control", "no-store");
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                null,
+                "Logged out successfully"
+            )
+        );
+
+    } catch (error) {
+        next(error);
+    }
+
+};
+
+export const logoutAll = async (req, res, next) => {
+
+    try {
+
+        await logoutAllSessions(req.user._id);
+
+        clearRefreshTokenCookie(res);
+
+        res.set("Cache-Control", "no-store");
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                null,
+                "Logged out from all devices successfully"
+            )
+        );
+
+    } catch (error) {
+        next(error);
+    }
+
+};
+
+export const getMe = (req, res, next) => {
+
+    try {
+
+        res.set("Cache-Control", "no-store");
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                req.user.toJSON(),
+                "User profile retrieved successfully"
+            )
+        );
+
+    } catch (error) {
         next(error);
     }
 

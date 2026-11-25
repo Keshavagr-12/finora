@@ -190,3 +190,53 @@ export const refreshSession = async (refreshToken) => {
     }
 
 };
+
+export const logoutUser = async (refreshToken) => {
+
+    if (
+        typeof refreshToken !== "string" ||
+        !/^[a-f0-9]{128}$/.test(refreshToken)
+    ) {
+        return;
+    }
+
+    const tokenHash = hashToken(refreshToken);
+
+    const storedToken = await RefreshToken.findOne({
+        tokenHash
+    });
+
+    if (!storedToken || !storedToken.familyId) {
+        return;
+    }
+
+    await RefreshToken.updateMany(
+        {
+            user: storedToken.user,
+            familyId: storedToken.familyId,
+            revokedAt: null
+        },
+        {
+            $set: {
+                revokedAt: new Date()
+            }
+        }
+    );
+
+};
+
+export const logoutAllSessions = async (userId) => {
+
+    await RefreshToken.updateMany(
+        {
+            user: userId,
+            revokedAt: null
+        },
+        {
+            $set: {
+                revokedAt: new Date()
+            }
+        }
+    );
+
+};

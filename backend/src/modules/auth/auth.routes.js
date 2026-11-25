@@ -1,13 +1,12 @@
 import { Router } from "express";
 
-import { protect } from "../../middleware/auth.middleware.js";
-
-import ApiResponse from "../../utils/ApiResponse.js";
-
 import {
     register,
     login,
-    refresh
+    refresh,
+    logout,
+    logoutAll,
+    getMe
 } from "./auth.controller.js";
 
 import {
@@ -16,19 +15,20 @@ import {
     refreshLimiter
 } from "../../middleware/rateLimit.middleware.js";
 
+import {
+    protect
+} from "../../middleware/auth.middleware.js";
 
 import {
     verifyOrigin
 } from "../../middleware/csrf.middleware.js";
 
-
 const router = Router();
 
 router.post(
-    "/refresh",
-    verifyOrigin,
-    refreshLimiter,
-    refresh
+    "/register",
+    registerLimiter,
+    register
 );
 
 router.post(
@@ -38,20 +38,30 @@ router.post(
     login
 );
 
-router.get("/protected-test", protect, (req, res) => {
+router.post(
+    "/refresh",
+    verifyOrigin,
+    refreshLimiter,
+    refresh
+);
 
-    return res.status(200).json(
-        new ApiResponse(
-            200,
-            {
-                userId: req.user._id,
-                email: req.user.email,
-                role: req.user.role
-            },
-            "Protected route accessed successfully"
-        )
-    );
+router.post(
+    "/logout",
+    verifyOrigin,
+    logout
+);
 
-});
+router.post(
+    "/logout-all",
+    verifyOrigin,
+    protect,
+    logoutAll
+);
+
+router.get(
+    "/me",
+    protect,
+    getMe
+);
 
 export default router;
