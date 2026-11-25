@@ -55,8 +55,7 @@ export const createTokenPair = async (
 
     const expiresAt = new Date(
         Date.now() +
-        env.REFRESH_TOKEN_EXPIRY_DAYS *
-        24 * 60 * 60 * 1000
+        env.REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000
     );
 
     await RefreshToken.create(

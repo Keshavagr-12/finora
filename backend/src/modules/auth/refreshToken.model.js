@@ -15,6 +15,11 @@ const refreshTokenSchema = new mongoose.Schema(
             select: false
         },
 
+        familyId: {
+            type: String,
+            required: true
+        },
+
         expiresAt: {
             type: Date,
             required: true
@@ -36,15 +41,18 @@ const refreshTokenSchema = new mongoose.Schema(
     }
 );
 
-// Automatically remove expired sessions eventually
 refreshTokenSchema.index(
     { expiresAt: 1 },
     { expireAfterSeconds: 0 }
 );
 
-// Find active sessions belonging to a user
 refreshTokenSchema.index({
     user: 1,
+    revokedAt: 1
+});
+
+refreshTokenSchema.index({
+    familyId: 1,
     revokedAt: 1
 });
 

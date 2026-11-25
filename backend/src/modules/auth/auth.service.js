@@ -158,13 +158,10 @@ export const refreshSession = async (refreshToken) => {
                 }
 
                 // Generate replacement tokens
-                const tokens = await createTokenPair(
-                    user,
-                    {
-                        familyId: storedToken.familyId,
-                        session
-                    }
-                );
+                const tokens = await createTokenPair(user, {
+    familyId: storedToken.familyId,
+    session
+});
 
                 // Revoke the previous refresh token
                 storedToken.revokedAt = now;
