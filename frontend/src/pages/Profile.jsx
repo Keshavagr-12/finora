@@ -8,6 +8,8 @@ import { getMeAPI } from "../api/auth.api";
 
 import { getErrorMessage } from "../utils/getErrorMessage";
 
+import SessionActions from "../components/dashboard/SessionActions";
+
 
 function Profile() {
 
@@ -184,6 +186,8 @@ function Profile() {
                 </div>
 
             </section>
+
+            <SessionActions />
 
         </div>
 
