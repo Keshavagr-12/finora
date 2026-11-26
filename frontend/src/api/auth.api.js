@@ -36,15 +36,10 @@ export const refreshAPI = async () => {
 };
 
 
-export const getMeAPI = async (accessToken) => {
+export const getMeAPI = async () => {
 
     const response = await api.get(
-        "/auth/me",
-        {
-            headers: {
-                Authorization: `Bearer ${accessToken}`
-            }
-        }
+        "/auth/me"
     );
 
     return response.data;
@@ -63,16 +58,10 @@ export const logoutAPI = async () => {
 };
 
 
-export const logoutAllAPI = async (accessToken) => {
+export const logoutAllAPI = async () => {
 
     const response = await api.post(
-        "/auth/logout-all",
-        null,
-        {
-            headers: {
-                Authorization: `Bearer ${accessToken}`
-            }
-        }
+        "/auth/logout-all"
     );
 
     return response.data;

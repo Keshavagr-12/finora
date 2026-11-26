@@ -198,42 +198,38 @@ const useAuthStore = create((set, get) => ({
 
     // Logout all devices
 
-    logoutAll: async () => {
+logoutAll: async () => {
+
+    set({
+        isLoading: true,
+        error: null
+    });
+
+    try {
+
+        const response = await logoutAllAPI();
+
+        get().clearAuth();
+
+        return response;
+
+    } catch (error) {
 
         set({
-            isLoading: true,
-            error: null
+            error: getErrorMessage(error)
         });
 
-        try {
+        throw error;
 
-            const accessToken = get().accessToken;
+    } finally {
 
-            const response = await logoutAllAPI(
-                accessToken
-            );
-
-            get().clearAuth();
-
-            return response;
-
-        } catch (error) {
-
-            set({
-                error: getErrorMessage(error)
-            });
-
-            throw error;
-
-        } finally {
-
-            set({
-                isLoading: false
-            });
-
-        }
+        set({
+            isLoading: false
+        });
 
     }
+
+}
 
 }));
 
