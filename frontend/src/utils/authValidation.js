@@ -33,3 +33,31 @@ export const validateRegistration = (formData) => {
     return errors;
 
 };
+
+export const validateLogin = (formData) => {
+
+    const errors = {};
+
+    const { email, password } = formData;
+
+    if (!email.trim()) {
+        errors.email = "Email is required";
+    } else if (
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+    ) {
+        errors.email = "Enter a valid email address";
+    } else if (email.trim().length > 254) {
+        errors.email = "Email is too long";
+    }
+
+    if (!password) {
+        errors.password = "Password is required";
+    } else if (
+        new TextEncoder().encode(password).length > 72
+    ) {
+        errors.password = "Password cannot exceed 72 bytes";
+    }
+
+    return errors;
+
+};
