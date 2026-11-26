@@ -30,3 +30,5 @@ model_artifacts/
 .idea/
 .DS_Store
 Thumbs.db
+
+.env.test
