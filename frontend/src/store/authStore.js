@@ -4,12 +4,16 @@ import {
     registerAPI,
     loginAPI,
     logoutAPI,
-    logoutAllAPI
+    logoutAllAPI,
+    refreshAPI,
+    getMeAPI
 } from "../api/auth.api";
 
 import {
     getErrorMessage
 } from "../utils/getErrorMessage";
+
+let initializationPromise = null;
 
 
 const useAuthStore = create((set, get) => ({
@@ -27,6 +31,8 @@ const useAuthStore = create((set, get) => ({
     isInitialized: false,
 
     error: null,
+
+    initializationError: null,
 
 
     // State management actions
@@ -86,6 +92,85 @@ const useAuthStore = create((set, get) => ({
         });
 
     },
+
+    initializeAuth: async () => {
+
+    if (get().isInitialized) return;
+
+    if (initializationPromise) {
+        return initializationPromise;
+    }
+
+    initializationPromise = (async () => {
+
+        set({
+            initializationError: null
+        });
+
+        try {
+
+            const refreshResponse = await refreshAPI();
+
+            const accessToken =
+                refreshResponse.data.accessToken;
+
+            if (!accessToken) {
+                throw new Error("Access token not received");
+            }
+
+            get().setAccessToken(accessToken);
+
+
+            const profileResponse = await getMeAPI();
+
+            const user = profileResponse.data;
+
+            if (!user?._id) {
+                throw new Error("User profile not received");
+            }
+
+            get().setAuth(
+                user,
+                get().accessToken
+            );
+
+            set({
+                isInitialized: true
+            });
+
+        } catch (error) {
+
+            get().clearAuth();
+
+            const status = error.response?.status;
+
+            if (status === 401 || status === 403) {
+
+                set({
+                    isInitialized: true,
+                    initializationError: null
+                });
+
+            } else {
+
+                set({
+                    isInitialized: false,
+                    initializationError: getErrorMessage(error)
+                });
+
+            }
+
+        }
+
+    })().finally(() => {
+
+        initializationPromise = null;
+
+    });
+
+    return initializationPromise;
+
+},
 
 
     // Registration
